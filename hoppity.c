@@ -13,14 +13,17 @@
 #include <time.h>
 #include <math.h>
 
+//Define el tamaño del tablero, se usa el define por si quieras jugar con un tablero de diferente tamaño.
 #define N 16
 
+/*Se define la estructura de las coordenadas, el cual consta de un valor para la fila y otro para la columna, 
+funciona porque usaremos ambos valores en todo el programa.*/
 struct coordFicha {
 		int fila;
 		int columna;
 	};
 
-
+/*Funcion para dar el mensaje de bienvenida al programa por formalidad. */
 void bienvenida(){
     printf("Bienvenido al juego Hoppity!\n");
     printf("El objetivo del juego es llevar tus fichas a la esquina del rival.\n");
@@ -28,6 +31,12 @@ void bienvenida(){
     printf("Puedes saltar entre ficha y ficha para llegar al destino. Salta y gana!\n\n");
 }   
 
+/*
+Se inicializa el tablero vacio, para luego empezar a rellenarlo. 
+Parametros: tablero(tamaño del tablero), la struct declarada anteriormente para las coordenadas de las fichas, y el valor random que genera el programa
+para definir que fichas son las tuyas.
+Return: void. Solamente introduce al tablero las fichas.
+*/
 void inicializarTab (char tablero[N][N], struct coordFicha fichasMaquina[19], int sorteo){
 	int c, i, j, k;
 	// se carga el tablero con guion bajos
@@ -84,6 +93,7 @@ void inicializarTab (char tablero[N][N], struct coordFicha fichasMaquina[19], in
 	}
 }
 
+/*Se imprime el tablero del juego, con las fichas en cada esquina. */
 void imprimirTab (char tablero[N][N]){
 	int i, j;
 	// se imprimen los numeros de las columnas
@@ -102,24 +112,34 @@ void imprimirTab (char tablero[N][N]){
 	printf("\n");
 }
 
-
+/*
+La funcion mas importante del programa, ya que controla el flujo del juego.
+Parametros: 
+tablero: La matriz del tablero.
+tipoFicha: El tipo de ficha que te toco(O o X).
+fInic, cInic, Ffinal, cFinal: Punteros a las los valores que introduce el usuario, que serian las coordenadas de las fichas en el tablero (a seleccionar o a donde mover)
+Return: void. Por medios de punteros, cambia las coordenadas de las fichas dependiendo de a donde las muevas. 
+Parentesis: En esta funcion tambien se validan las coordenadas, si no pones coordenadas correctas, la funcion se repite.
+*/
 void jugadaUsuario (char tablero[N][N], char tipoFicha, int *fInic, int *cInic, int *fFinal, int *cFinal){
 	int k, movimientos, validacion;
-	do {
-		do{
+	    do{
 			printf("Ingrese el numero de fila de la ficha a mover: ");
 			scanf("%d", fInic);
             *fInic -= 1;
-			} while (*fInic < 0 || *fInic > 16);
-			
-		do {
-			printf("Ingrese el numero de columna de la ficha a mover: ");
+            printf("Ingrese el numero de columna de la ficha a mover: ");
 			scanf("%d", cInic);
-			*cInic -= 1;
-		} while (*cInic < 0 || *cInic > 16);
-            
-		printf("Ingrese la cantidad de movimientos: ");
+            *cInic -= 1;
+            validacion=1;
+            if(*fInic < 0 || *fInic > 16 || *cInic < 0 || *cInic > 16 || (tablero[*fInic][*cInic] != 'O' && tipoFicha == 'O')|| (tablero[*fInic][*cInic] != 'X' && tipoFicha == 'X')){
+                printf("No hay una ficha en esa posicion\n");
+                validacion = 0;
+            }
+			} while (validacion==0);
+			
+        printf("Ingrese la cantidad de movimientos: ");
 		scanf("%d", &movimientos);
+        do {
 		for (k = 1, validacion = 1; k <= movimientos && validacion == 1; k++){
 			do {
 				printf("Ingrese el numero de fila de la posicion de destino: ");
@@ -131,8 +151,6 @@ void jugadaUsuario (char tablero[N][N], char tipoFicha, int *fInic, int *cInic, 
 				scanf("%d", cFinal);
 				*cFinal -= 1;
 			} while (*cFinal < 0 || *cFinal > 16);
-			// se verifica si la posicion de origen corresponde a una ficha del usuario
-			if ((tablero[*fInic][*cInic] == 'O' && tipoFicha == 'O') || (tablero[*fInic][*cInic] == 'X' && tipoFicha == 'X')){
 					// se verifica si la posicion de destino esta vacia
 					if (tablero[*fFinal][*cFinal] == '_'){
 						// se verifica si la posicion de desstino es adyacente a la posicion de origen
@@ -152,7 +170,7 @@ void jugadaUsuario (char tablero[N][N], char tipoFicha, int *fInic, int *cInic, 
                             else
                                 tablero[*fFinal][*cFinal] = 'X';
                             imprimirTab (tablero);
-                            printf("Haz movido una ficha de la posicion (%d, %d) a la posicion (%d, %d)\n", *fInic + 1, *cInic + 1, *fFinal + 1, *cFinal + 1);
+                            printf("Has movido una ficha de la posicion (%d, %d) a la posicion (%d, %d)\n", *fInic + 1, *cInic + 1, *fFinal + 1, *cFinal + 1);
                             *fInic = *fFinal;
                             *cInic = *cFinal;
 						} else {
@@ -177,25 +195,28 @@ void jugadaUsuario (char tablero[N][N], char tipoFicha, int *fInic, int *cInic, 
 							} else {
 								printf("Movimiento no valido\n");
 								validacion = 0;
+                                
 							}
 						}
 					} else {
 						printf("La casilla destino esta ocupada\n");
 						validacion = 0;
+                        
 					}
-				} else {
-					if(tipoFicha == 'O')
-						printf("La posicion de origen no corresponde a un ficha O\n");
-					else
-						printf ("La posicion de origen no corresponde a un ficha X\n");
-					validacion = 0;
 				}
-		}
 
 	} while (validacion == 0);
 	
 }
 
+/*
+Esta funcion realiza el movimiento de la maquina. Por el momento no es "inteligente", solo hace movimientos permitidos.
+Parametros: 
+tablero: La matriz del tablero.
+coordFicha: La struct dada para las coordenadas de las fichas.
+tipoFicha: El tipo de ficha que le toco(O o X).
+*ficha, *fInic, *cInic, *fFinal, *cFinal: Punteros para modificar las coordenadas de las fichas.
+*/
 void jugadaMaquina (char tablero[N][N], struct coordFicha fichaMaquina[19], char tipoFicha, int *ficha, int *fInic, int *cInic, int *fFinal, int *cFinal){
 	srand (time(NULL));
 	int band = 0;
@@ -324,6 +345,13 @@ void jugadaMaquina (char tablero[N][N], struct coordFicha fichaMaquina[19], char
 	fichaMaquina[*ficha].fila = *fFinal;
 	fichaMaquina[*ficha].columna = *cFinal;
 }
+/*Esta funcion termina el programa si encuentra un ganador. 
+Parametros: 
+tablero: Matriz del tablero
+tipoficha: Recibe que el tipo de ficha de cada jugador (O o X)
+Return: 
+A si todavia no termina, el tipo de ficha ganador si termina.
+*/
 char verificarFindelJuego (char tablero[N][N], char tipoFicha){
 	int i, j, k;
 	// se verifica si todas las fichas O llegaron al campamento enemigo
@@ -411,8 +439,8 @@ int main(void) {
     }
 	
 	if (finJuego == fichaUsuario)
-		printf("Felicidades!!!/nHaz Ganado :)");
+		printf("Felicidades!!! \n Has Ganado :)");
 	else
-		printf("Perdiste :(\nTal vez la proxima");
+		printf("Perdiste :( \n Tal vez la proxima");
 	return EXIT_SUCCESS;
 }
