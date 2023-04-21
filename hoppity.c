@@ -23,12 +23,31 @@ struct coordFicha {
 		int columna;
 	};
 
-/*Funcion para dar el mensaje de bienvenida al programa por formalidad. */
-void bienvenida(){
+/*Funcion para dar el mensaje de bienvenida al programa. Pregunta al usuario si quiere sortear las fichas y los turnos, o elegirlos.
+Parametros: Ninguno.
+Return: Retorna 1 o 2. 
+1 Si decide elegir sus fichas y quien empieza. 
+2 Si desea que sea aleatorio. 
+ */
+int bienvenida(){
+    int opcion;
     printf("Bienvenido al juego Hoppity!\n");
     printf("El objetivo del juego es llevar tus fichas a la esquina del rival.\n");
     printf("Puedes escoger la cantidad de movimientos que deseas realizar.\n");
-    printf("Puedes saltar entre ficha y ficha para llegar al destino. Salta y gana!\n\n");
+    printf("Puedes saltar entre ficha y ficha para llegar al destino. Salta y gana!\n");
+
+    do{
+        printf("Elige 1 para Escoger quien empieza y elegir la ficha de preferencia.\n");
+        printf("Elige 2 para Hacerlo de forma aleatoria. \n\n");
+        scanf("%d", &opcion);
+        if(opcion > 2 || opcion <1 ){
+            printf("No valido. ");
+        }
+        else{
+            return opcion;
+        }
+    }while(opcion > 2 || opcion <1);
+    return opcion;
 }   
 
 /*
@@ -356,26 +375,26 @@ char verificarFindelJuego (char tablero[N][N], char tipoFicha){
 	int i, j, k;
 	// se verifica si todas las fichas O llegaron al campamento enemigo
 	if (tipoFicha == 'O'){
-		for (j = 0; j < 5; j++){
-			if (tablero[0][j] != 'O')
+		for (j = 1; j <= 5; j++){
+			if (tablero[1][j] != 'O')
 				return 'A';
 			}
-		for (i = 1; i < 5; i++){
-			for(j = 0; j < 6 - i; j++){
-				if (tablero[i][j] != 'X')
+		for (i = 1; i <= 5; i++){
+			for(j = 1; j <= 6 - i; j++){
+				if (tablero[i][j] != 'O')
 					return 'A';
 			}
 		}
 		return 'O';
 	// se verifica si todas las fichas X llegaron al campamento enemigo
 	} else {
-		for(i = 11, k = 4; i < 15; i++, k--){
+		for(i = 12, k = 4; i <= 15; i++, k--){
 			for(j = 10 + k; j < 16; j++){
 				if (tablero[i][j] != 'X')
 					return 'A';
 			}
 		}
-		for (j = 11; j < 16; j++){
+		for (j = 12; j <= 16; j++){
 			if (tablero[15][j] != 'X')
 					return 'A';
 		}
@@ -386,57 +405,110 @@ char verificarFindelJuego (char tablero[N][N], char tipoFicha){
 int main(void) {
 	srand (time(NULL));
 	struct coordFicha fichasMaquina [19]; //almacena las posiciones de todas la fichas de la maquina
-	int f1, c1, f2, c2, sorteoFicha, sorteoInicio;
+	int f1, c1, f2, c2, sorteoFicha, sorteoInicio, inicio, opcionFicha;
 	int ficha; // ficha: Número de ficha de la máquina
 	char tablero[N][N], fichaUsuario, fichaMaquina, finJuego; 
 
-    bienvenida();
+    inicio = bienvenida();
+    if (inicio == 2){
+        // Toma los valores de O o X dependeindo de la ficha
+        sorteoFicha = rand() % 2;
+        if (sorteoFicha == 0){
+            fichaUsuario = 'O';
+            fichaMaquina = 'X';
+        } else {
+            fichaUsuario = 'X';
+            fichaMaquina = 'O';
+	    }
 
-    // Toma los valores de O o X dependeindo de la ficha
-	sorteoFicha = rand() % 2;
-	if (sorteoFicha == 0){
-		fichaUsuario = 'O';
-		fichaMaquina = 'X';
-	} else {
-		fichaUsuario = 'X';
-		fichaMaquina = 'O';
-	}
-	inicializarTab (tablero, fichasMaquina, sorteoFicha);
-	imprimirTab (tablero);
-	printf("Eres la ficha %c y la maquina es la ficha %c\n", fichaUsuario, fichaMaquina);
+        inicializarTab (tablero, fichasMaquina, sorteoFicha);
+        imprimirTab (tablero);
+        printf("Eres la ficha %c y la maquina es la ficha %c\n", fichaUsuario, fichaMaquina);
 
-    sorteoInicio = rand()%2;
-    if(sorteoInicio==0){
-        do {
-		printf("Su turno\n");
-		jugadaUsuario (tablero, fichaUsuario, &f1, &c1, &f2, &c2);
-		finJuego = verificarFindelJuego (tablero, fichaUsuario);
-		if (finJuego == 'A'){
-			printf("Turno de la maquina\n");
-			jugadaMaquina (tablero, fichasMaquina, fichaMaquina, &ficha, &f1, &c1, &f2, &c2);
-			imprimirTab (tablero);
-			printf("La maquina ha movido una ficha de la posicion (%d, %d) a la posicion (%d, %d)\n", f1 + 1, c1 + 1, f2 + 1, c2 + 1);
-			finJuego = verificarFindelJuego (tablero, fichaMaquina);
-		}
-	}while (finJuego == 'A');
-    }
-    else{
-        do{
-            printf("Turno de la maquina\n");
-            jugadaMaquina (tablero, fichasMaquina, fichaMaquina, &ficha, &f1, &c1, &f2, &c2);
-            imprimirTab (tablero);
-            printf("La maquina ha movido una ficha de la posicion (%d, %d) a la posicion (%d, %d)\n", f1 + 1, c1 + 1, f2 + 1, c2 + 1);
-            finJuego = verificarFindelJuego (tablero, fichaMaquina);
+        sorteoInicio = rand()%2;
+        if(sorteoInicio==0){
+            do {
+            printf("Su turno\n");
+            jugadaUsuario (tablero, fichaUsuario, &f1, &c1, &f2, &c2);
+            finJuego = verificarFindelJuego (tablero, fichaUsuario);
             if (finJuego == 'A'){
+                printf("Turno de la maquina\n");
+                jugadaMaquina (tablero, fichasMaquina, fichaMaquina, &ficha, &f1, &c1, &f2, &c2);
+                imprimirTab (tablero);
+                printf("La maquina ha movido una ficha de la posicion (%d, %d) a la posicion (%d, %d)\n", f1 + 1, c1 + 1, f2 + 1, c2 + 1);
+                finJuego = verificarFindelJuego (tablero, fichaMaquina);
+            }
+        }while (finJuego == 'A');
+        }
+        else{
+            do{
+                printf("Turno de la maquina\n");
+                jugadaMaquina (tablero, fichasMaquina, fichaMaquina, &ficha, &f1, &c1, &f2, &c2);
+                imprimirTab (tablero);
+                printf("La maquina ha movido una ficha de la posicion (%d, %d) a la posicion (%d, %d)\n", f1 + 1, c1 + 1, f2 + 1, c2 + 1);
+                finJuego = verificarFindelJuego (tablero, fichaMaquina);
+                if (finJuego == 'A'){
+                    printf("Su turno\n");
+                    jugadaUsuario (tablero, fichaUsuario, &f1, &c1, &f2, &c2);
+                    finJuego = verificarFindelJuego (tablero, fichaUsuario);
+                }
+
+            }while(finJuego=='A');
+        }
+        }
+        else{
+            printf("Ingresa 1 para ser X. Ingresa 2 para ser O. ");
+            scanf("%d", &opcionFicha);
+
+            
+
+            if(opcionFicha==2){
+                fichaMaquina = 'X';
+                fichaUsuario = 'O';
+            }
+            else{
+                fichaMaquina = 'O';
+                fichaUsuario = 'X';
+            }
+            printf("Ingresa 1 si quieres ser primero. Ingresa 2 si quieres ser segundo. \n");
+            scanf("%d", &sorteoInicio);
+            inicializarTab (tablero, fichasMaquina, sorteoFicha);
+	        imprimirTab (tablero);
+	        printf("Eres la ficha %c y la maquina es la ficha %c\n", fichaUsuario, fichaMaquina);
+
+
+            if(sorteoInicio==1){
+                do {
                 printf("Su turno\n");
                 jugadaUsuario (tablero, fichaUsuario, &f1, &c1, &f2, &c2);
                 finJuego = verificarFindelJuego (tablero, fichaUsuario);
+                if (finJuego == 'A'){
+                    printf("Turno de la maquina\n");
+                    jugadaMaquina (tablero, fichasMaquina, fichaMaquina, &ficha, &f1, &c1, &f2, &c2);
+                    imprimirTab (tablero);
+                    printf("La maquina ha movido una ficha de la posicion (%d, %d) a la posicion (%d, %d)\n", f1 + 1, c1 + 1, f2 + 1, c2 + 1);
+                    finJuego = verificarFindelJuego (tablero, fichaMaquina);
+                }
+            }while (finJuego == 'A');
             }
+            else{
+                do{
+                    printf("Turno de la maquina\n");
+                    jugadaMaquina (tablero, fichasMaquina, fichaMaquina, &ficha, &f1, &c1, &f2, &c2);
+                    imprimirTab (tablero);
+                    printf("La maquina ha movido una ficha de la posicion (%d, %d) a la posicion (%d, %d)\n", f1 + 1, c1 + 1, f2 + 1, c2 + 1);
+                    finJuego = verificarFindelJuego (tablero, fichaMaquina);
+                    if (finJuego == 'A'){
+                        printf("Su turno\n");
+                        jugadaUsuario (tablero, fichaUsuario, &f1, &c1, &f2, &c2);
+                        finJuego = verificarFindelJuego (tablero, fichaUsuario);
+                    }
 
-        }while(finJuego=='A');
-            
+                } while(finJuego=='A');
+            }
+        }
+        
 
-    }
 	
 	if (finJuego == fichaUsuario)
 		printf("Felicidades!!! \n Has Ganado :)");
